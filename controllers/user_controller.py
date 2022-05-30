@@ -6,9 +6,6 @@
 """
 from models.mysql_client import MySQLClient
 import logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s %(levelname)s %(processName)s %(module)s.%(funcName)s Line:%(lineno)d - %(message)s')
 
 
 def execute_login(username, password):
@@ -36,5 +33,5 @@ def execute_change_pwd(user, old_pwd, new_pwd):
         MySQLClient.execute('his', 'UPDATE `bench`.`user` SET `pwd`=%s WHERE `name`=%s', (new_pwd, user))
         return {'code': 0, 'msg': 'OK'}
     except Exception as e:
-        logging.error(e)
+        logging.exception(e)
         return {'code': -2, 'msg': e.__context__}

@@ -7,9 +7,6 @@
 from models import excel_client
 from models.mysql_client import MySQLClient
 import logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s %(levelname)s %(processName)s %(module)s.%(funcName)s Line:%(lineno)d - %(message)s')
 
 
 def get_patient_detail(data_id):
@@ -51,7 +48,7 @@ def get_patient_detail(data_id):
     except Exception as e:
         code = -1
         msg = str(e)
-        logging.error(msg)
+        logging.exception(e)
     return {'code': code, 'msg': msg, 'data': result}
 
 
@@ -90,8 +87,8 @@ def execute_search(data):
                         'source': t[5]} for t in temps]
     except Exception as e:
         code = -1
-        msg = '数据异常：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据异常：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': results, 'count': count}
 
 
@@ -130,8 +127,8 @@ def execute_add(data):
         __insert_roommates(data)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg}
 
 
@@ -141,14 +138,17 @@ def __insert_roommates(data):
     :param data:
     :return:
     """
-    if data['roommate_no']:
-        pid = get_pid_by_id_no(data['id_no'])[0]
-        db_query = "INSERT INTO `bench`.`roommate` (`pid`, `name`, `id_no`) VALUES "
-        for i in data['roommate_no'].split(','):
-            db_query = db_query + "({0},'{1}','{2}'),".format(
-                pid, data['roommate_name' + i], data['roommate_id_no' + i])
-        db_query = db_query[:-1] + ';'
-        MySQLClient.execute('his', db_query)
+    try:
+        if data['roommate_no']:
+            pid = get_pid_by_id_no(data['id_no'])[0]
+            db_query = "INSERT INTO `bench`.`roommate` (`pid`, `name`, `id_no`) VALUES "
+            for i in data['roommate_no'].split(','):
+                db_query = db_query + "({0},'{1}','{2}'),".format(
+                    pid, data['roommate_name' + i], data['roommate_id_no' + i])
+            db_query = db_query[:-1] + ';'
+            MySQLClient.execute('his', db_query)
+    except Exception as e:
+        logging.exception(e)
 
 
 def execute_update(data):
@@ -178,8 +178,8 @@ def execute_update(data):
         __insert_roommates(data)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg}
 
 
@@ -213,8 +213,8 @@ def read_excel(file):
             __batch_update_roommates(common_lines)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': error_lines if error_lines else None}
 
 
@@ -224,19 +224,22 @@ def __batch_update_roommates(row_datas):
     :param row_datas:
     :return:
     """
-    data_list = [{'id_no': row_data[2], 'roommate': row_data[9]} for row_data in row_datas]
-    for row_data in data_list:
-        pid = get_pid_by_id_no(row_data['id_no'])[0]
-        MySQLClient.execute('his', "DELETE FROM `bench`.`roommate` WHERE `pid`={0}".format(pid))
-        mate_arr = row_data['roommate'].split(';')
-        db_query = "INSERT INTO `bench`.`roommate`(`pid`,`name`,`id_no`) VALUES "
-        for mate in mate_arr:
-            if mate.strip():
-                mate_items = mate.split(',')
-                db_query += "({0},'{1}','{2}'),".format(pid, mate_items[0].strip(), mate_items[1].strip())
-        if db_query[-1] == ',':
-            db_query = db_query[:-1] + ';'
-            MySQLClient.execute('his', db_query)
+    try:
+        data_list = [{'id_no': row_data[2], 'roommate': row_data[9]} for row_data in row_datas]
+        for row_data in data_list:
+            pid = get_pid_by_id_no(row_data['id_no'])[0]
+            MySQLClient.execute('his', "DELETE FROM `bench`.`roommate` WHERE `pid`={0}".format(pid))
+            mate_arr = row_data['roommate'].split(';')
+            db_query = "INSERT INTO `bench`.`roommate`(`pid`,`name`,`id_no`) VALUES "
+            for mate in mate_arr:
+                if mate.strip():
+                    mate_items = mate.split(',')
+                    db_query += "({0},'{1}','{2}'),".format(pid, mate_items[0].strip(), mate_items[1].strip())
+            if db_query[-1] == ',':
+                db_query = db_query[:-1] + ';'
+                MySQLClient.execute('his', db_query)
+    except Exception as e:
+        logging.exception(e)
 
 
 def __batch_insert_update(row_datas):
@@ -245,33 +248,35 @@ def __batch_insert_update(row_datas):
     :param row_datas: 行数据列表
     :return:
     """
-    data_list = [{
-        'name': row_data[1],
-        'id_no': str(row_data[2]).split('.')[0],
-        'age': str(row_data[3]).split('.')[0],
-        'phone': str(row_data[4]).split('.')[0],
-        'address': row_data[5],
-        'town': row_data[6],
-        'occupation': row_data[7],
-        'work_unit': row_data[8],
-        'basic_disease': row_data[10],
-        'out_treatment': row_data[11],
-        'first_positive_date': row_data[12] if row_data[12] else '1900-01-01',
-        'last_positive_date': row_data[13] if row_data[12] else '1900-01-01',
-        'source': row_data[14]
-    } for row_data in row_datas]
-    db_query = "INSERT INTO `bench`.`patient`(`name`,`id_no`,`age`,`phone`,`address`,`town`,`basic_disease`," \
-               "`out_treatment`,`first_positive_date`,`last_positive_date`,`source`,`occupation`,`work_unit`) VALUES "
-    for row_data in data_list:
-        temp = "('{name}','{id_no}',{age},'{phone}','{address}','{town}','{basic_disease}','{out_treatment}'," \
-                    "'{first_positive_date}','{last_positive_date}','{source}','{occupation}'," \
-                    "'{work_unit}'),".format(**row_data)
-        db_query += temp
-    db_query = db_query[:-1]
-    db_query += " ON DUPLICATE KEY UPDATE `name`=VALUES(`name`),`id_no`=VALUES(`id_no`),`age`=VALUES(`age`)," \
-                "`phone`=VALUES(`phone`),`address`=VALUES(`address`),`town`=VALUES(`town`)," \
-                "`basic_disease`=VALUES(`basic_disease`),`out_treatment`=VALUES(`out_treatment`)," \
-                "`first_positive_date`=VALUES(`first_positive_date`),`last_positive_date`=VALUES(`last_positive_date`)," \
-                "`source`=VALUES(`source`),`occupation`=VALUES(`occupation`),`work_unit`=VALUES(`work_unit`);"
-    MySQLClient.execute('his', db_query)
-
+    try:
+        data_list = [{
+            'name': row_data[1],
+            'id_no': str(row_data[2]).split('.')[0],
+            'age': str(row_data[3]).split('.')[0],
+            'phone': str(row_data[4]).split('.')[0],
+            'address': row_data[5],
+            'town': row_data[6],
+            'occupation': row_data[7],
+            'work_unit': row_data[8],
+            'basic_disease': row_data[10],
+            'out_treatment': row_data[11],
+            'first_positive_date': row_data[12] if row_data[12] else '1900-01-01',
+            'last_positive_date': row_data[13] if row_data[12] else '1900-01-01',
+            'source': row_data[14]
+        } for row_data in row_datas]
+        db_query = "INSERT INTO `bench`.`patient`(`name`,`id_no`,`age`,`phone`,`address`,`town`,`basic_disease`," \
+                   "`out_treatment`,`first_positive_date`,`last_positive_date`,`source`,`occupation`,`work_unit`) VALUES "
+        for row_data in data_list:
+            temp = "('{name}','{id_no}',{age},'{phone}','{address}','{town}','{basic_disease}','{out_treatment}'," \
+                        "'{first_positive_date}','{last_positive_date}','{source}','{occupation}'," \
+                        "'{work_unit}'),".format(**row_data)
+            db_query += temp
+        db_query = db_query[:-1]
+        db_query += " ON DUPLICATE KEY UPDATE `name`=VALUES(`name`),`id_no`=VALUES(`id_no`),`age`=VALUES(`age`)," \
+                    "`phone`=VALUES(`phone`),`address`=VALUES(`address`),`town`=VALUES(`town`)," \
+                    "`basic_disease`=VALUES(`basic_disease`),`out_treatment`=VALUES(`out_treatment`)," \
+                    "`first_positive_date`=VALUES(`first_positive_date`),`last_positive_date`=VALUES(`last_positive_date`)," \
+                    "`source`=VALUES(`source`),`occupation`=VALUES(`occupation`),`work_unit`=VALUES(`work_unit`);"
+        MySQLClient.execute('his', db_query)
+    except Exception as e:
+        logging.exception(e)

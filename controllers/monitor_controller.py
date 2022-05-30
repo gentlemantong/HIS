@@ -7,9 +7,6 @@
 from models.mysql_client import MySQLClient
 from models import excel_client
 import logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s %(levelname)s %(processName)s %(module)s.%(funcName)s Line:%(lineno)d - %(message)s')
 
 
 def execute_search(data):
@@ -48,8 +45,8 @@ def execute_search(data):
                         'submit_date': t[5].strftime('%Y-%m-%d'), 'disposal_result': t[6]} for t in temps]
     except Exception as e:
         code = -1
-        msg = '数据异常：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据异常：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': results, 'count': count}
 
 
@@ -80,8 +77,8 @@ def execute_search_by_pid(data):
                         'disposal_result': t[3]} for t in temps]
     except Exception as e:
         code = -1
-        msg = '数据异常：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据异常：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': results, 'count': count}
 
 
@@ -103,8 +100,8 @@ def get_monitor_detail(data):
                   'submit_date': r[4].strftime('%Y-%m-%d'), 'disposal_result': '' if r[5] is None else r[5]}
     except Exception as e:
         code = -1
-        msg = '数据异常：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据异常：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': result}
 
 
@@ -122,8 +119,8 @@ def execute_update(data):
         MySQLClient.execute('his', db_query, None)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg}
 
 
@@ -157,8 +154,8 @@ def read_excel(file):
             __batch_insert_update(common_lines)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': error_lines if error_lines else None}
 
 
@@ -168,25 +165,28 @@ def __batch_insert_update(common_lines):
     :param common_lines:
     :return:
     """
-    db_query = "SELECT `id_no`,`id` FROM `bench`.`patient` WHERE `id_no` IN {0}".format(
-        str([i[2] for i in common_lines]).replace('[', '(').replace(']', ')'))
-    r = MySQLClient.find('his', db_query)
-    if not r:
-        raise Exception('请先上传人员基本信息')
-    patient = {k: v for k, v in r}
-    nat_list = [{
-        'pid': patient.get(line[2].upper()) if patient.get(line[2].upper()) else patient.get(line[2].lower()),
-        'submit_date': line[5],
-        'health_condition': line[3],
-        'out_status': line[4],
-        'disposal_result': line[6]
-    } for line in common_lines]
-    db_query = "INSERT INTO `bench`.`monitor`(`pid`,`submit_date`,`health_condition`,`out_status`,`disposal_result`) " \
-               "VALUES "
-    for nat in nat_list:
-        db_query += "({pid},'{submit_date}','{health_condition}','{out_status}','{disposal_result}'),".format(**nat)
-    db_query = db_query[:-1]
-    db_query += " ON DUPLICATE KEY UPDATE `pid`=VALUES(`pid`),`submit_date`=VALUES(`submit_date`)," \
-                "`health_condition`=VALUES(`health_condition`),`out_status`=VALUES(`out_status`)," \
-                "`disposal_result`=VALUES(`disposal_result`);"
-    MySQLClient.execute('his', db_query)
+    try:
+        db_query = "SELECT `id_no`,`id` FROM `bench`.`patient` WHERE `id_no` IN {0}".format(
+            str([i[2] for i in common_lines]).replace('[', '(').replace(']', ')'))
+        r = MySQLClient.find('his', db_query)
+        if not r:
+            raise Exception('请先上传人员基本信息')
+        patient = {k: v for k, v in r}
+        nat_list = [{
+            'pid': patient.get(line[2].upper()) if patient.get(line[2].upper()) else patient.get(line[2].lower()),
+            'submit_date': line[5],
+            'health_condition': line[3],
+            'out_status': line[4],
+            'disposal_result': line[6]
+        } for line in common_lines]
+        db_query = "INSERT INTO `bench`.`monitor`(`pid`,`submit_date`,`health_condition`,`out_status`,`disposal_result`) " \
+                   "VALUES "
+        for nat in nat_list:
+            db_query += "({pid},'{submit_date}','{health_condition}','{out_status}','{disposal_result}'),".format(**nat)
+        db_query = db_query[:-1]
+        db_query += " ON DUPLICATE KEY UPDATE `pid`=VALUES(`pid`),`submit_date`=VALUES(`submit_date`)," \
+                    "`health_condition`=VALUES(`health_condition`),`out_status`=VALUES(`out_status`)," \
+                    "`disposal_result`=VALUES(`disposal_result`);"
+        MySQLClient.execute('his', db_query)
+    except Exception as e:
+        logging.exception(e)

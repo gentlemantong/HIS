@@ -8,9 +8,6 @@ from models.mysql_client import MySQLClient
 from models import excel_client
 import datetime
 import logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s %(levelname)s %(processName)s %(module)s.%(funcName)s Line:%(lineno)d - %(message)s')
 
 
 def execute_search(data):
@@ -48,8 +45,8 @@ def execute_search(data):
                         'testing_date': t[5].strftime('%Y-%m-%d'), 'treatment': t[6]} for t in temps]
     except Exception as e:
         code = -1
-        msg = '数据异常：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据异常：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': results, 'count': count}
 
 
@@ -80,8 +77,8 @@ def execute_search_by_pid(data):
                        for t in temps]
     except Exception as e:
         code = -1
-        msg = '数据异常：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据异常：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': results, 'count': count}
 
 
@@ -153,8 +150,8 @@ def get_chart_data(param):
             data['ct_n'] = __get_ct_val(r, data['xAxis'], 1)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': data}
 
 
@@ -176,8 +173,8 @@ def get_nat_detail(data):
                   'testing_date': r[4].strftime('%Y-%m-%d'), 'treatment': '' if r[5] is None else r[5]}
     except Exception as e:
         code = -1
-        msg = '数据异常：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据异常：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': result}
 
 
@@ -195,8 +192,8 @@ def execute_update(data):
         MySQLClient.execute('his', db_query, None)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg}
 
 
@@ -230,8 +227,8 @@ def read_excel(file):
             __batch_insert_update(common_lines)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': error_lines if error_lines else None}
 
 
@@ -241,26 +238,29 @@ def __batch_insert_update(common_lines):
     :param common_lines:
     :return:
     """
-    db_query = "SELECT `id_no`,`id` FROM `bench`.`patient` WHERE `id_no` IN {0}".format(
-        str([i[2] for i in common_lines]).replace('[', '(').replace(']', ')'))
-    r = MySQLClient.find('his', db_query)
-    if not r:
-        raise Exception('请先上传人员基本信息')
-    patient = {k: v for k, v in r}
-    nat_list = [{
-        'pid': patient.get(line[2].upper()) if patient.get(line[2].upper()) else patient.get(line[2].lower()),
-        'testing_date': line[5],
-        'orf': line[3],
-        'n': line[4],
-        'treatment': line[6]
-    } for line in common_lines]
-    db_query = "INSERT INTO `bench`.`nucleic_acid_testing`(`pid`,`testing_date`,`orf`,`n`,`treatment`) VALUES "
-    for nat in nat_list:
-        db_query += "({pid},'{testing_date}','{orf}','{n}','{treatment}'),".format(**nat)
-    db_query = db_query[:-1]
-    db_query += " ON DUPLICATE KEY UPDATE `pid`=VALUES(`pid`),`testing_date`=VALUES(`testing_date`)," \
-                "`orf`=VALUES(`orf`),`n`=VALUES(`n`),`treatment`=VALUES(`treatment`);"
-    MySQLClient.execute('his', db_query)
+    try:
+        db_query = "SELECT `id_no`,`id` FROM `bench`.`patient` WHERE `id_no` IN {0}".format(
+            str([i[2] for i in common_lines]).replace('[', '(').replace(']', ')'))
+        r = MySQLClient.find('his', db_query)
+        if not r:
+            raise Exception('请先上传人员基本信息')
+        patient = {k: v for k, v in r}
+        nat_list = [{
+            'pid': patient.get(line[2].upper()) if patient.get(line[2].upper()) else patient.get(line[2].lower()),
+            'testing_date': line[5],
+            'orf': line[3],
+            'n': line[4],
+            'treatment': line[6]
+        } for line in common_lines]
+        db_query = "INSERT INTO `bench`.`nucleic_acid_testing`(`pid`,`testing_date`,`orf`,`n`,`treatment`) VALUES "
+        for nat in nat_list:
+            db_query += "({pid},'{testing_date}','{orf}','{n}','{treatment}'),".format(**nat)
+        db_query = db_query[:-1]
+        db_query += " ON DUPLICATE KEY UPDATE `pid`=VALUES(`pid`),`testing_date`=VALUES(`testing_date`)," \
+                    "`orf`=VALUES(`orf`),`n`=VALUES(`n`),`treatment`=VALUES(`treatment`);"
+        MySQLClient.execute('his', db_query)
+    except Exception as e:
+        logging.exception(e)
 
 
 def read_excel2(file):
@@ -288,8 +288,8 @@ def read_excel2(file):
             __batch_insert_update2(common_lines)
     except Exception as e:
         code = -1
-        msg = '数据错误：{0}'.format(str(e))
-        logging.error(msg)
+        msg = '数据错误：{0}'.format(e)
+        logging.exception(msg)
     return {'code': code, 'msg': msg, 'data': error_lines if error_lines else None}
 
 
@@ -299,23 +299,26 @@ def __batch_insert_update2(common_lines):
     :param common_lines:
     :return:
     """
-    date_titles = common_lines.pop(0)[1:]
-    db_query = "SELECT `id_no`,`id` FROM `bench`.`patient` WHERE `id_no` IN {0}".format(
-        str([i[0] for i in common_lines]).replace('[', '(').replace(']', ')'))
-    r = MySQLClient.find('his', db_query)
-    if not r:
-        raise Exception('请先上传人员基本信息')
-    patient = {k: v for k, v in r}
+    try:
+        date_titles = common_lines.pop(0)[1:]
+        db_query = "SELECT `id_no`,`id` FROM `bench`.`patient` WHERE `id_no` IN {0}".format(
+            str([i[0] for i in common_lines]).replace('[', '(').replace(']', ')'))
+        r = MySQLClient.find('his', db_query)
+        if not r:
+            raise Exception('请先上传人员基本信息')
+        patient = {k: v for k, v in r}
 
-    db_query = "INSERT INTO `bench`.`nucleic_acid_testing`(`pid`,`testing_date`,`orf`,`n`) VALUES "
-    for line in common_lines:
-        pid = patient.get(line[0].upper()) if patient.get(line[0].upper()) else patient.get(line[0].lower())
-        for d in range(0, len(date_titles), 2):
-            orf = str(line[d+1]).strip().replace('-', '').replace('—', '')
-            n = str(line[d+2]).strip().replace('-', '').replace('—', '')
-            if orf or n:
-                db_query += "({0},'{1}','{2}','{3}'),".format(pid, date_titles[d], line[d+1], line[d+2])
-    db_query = db_query[:-1]
-    db_query += " ON DUPLICATE KEY UPDATE `pid`=VALUES(`pid`),`testing_date`=VALUES(`testing_date`)," \
-                "`orf`=VALUES(`orf`),`n`=VALUES(`n`);"
-    MySQLClient.execute('his', db_query)
+        db_query = "INSERT INTO `bench`.`nucleic_acid_testing`(`pid`,`testing_date`,`orf`,`n`) VALUES "
+        for line in common_lines:
+            pid = patient.get(line[0].upper()) if patient.get(line[0].upper()) else patient.get(line[0].lower())
+            for d in range(0, len(date_titles), 2):
+                orf = str(line[d+1]).strip().replace('-', '').replace('—', '')
+                n = str(line[d+2]).strip().replace('-', '').replace('—', '')
+                if orf or n:
+                    db_query += "({0},'{1}','{2}','{3}'),".format(pid, date_titles[d], line[d+1], line[d+2])
+        db_query = db_query[:-1]
+        db_query += " ON DUPLICATE KEY UPDATE `pid`=VALUES(`pid`),`testing_date`=VALUES(`testing_date`)," \
+                    "`orf`=VALUES(`orf`),`n`=VALUES(`n`);"
+        MySQLClient.execute('his', db_query)
+    except Exception as e:
+        logging.exception(e)
