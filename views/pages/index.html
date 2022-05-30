@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>重点人员档案</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" href="/imgs/favicon.ico">
+    <style>
+        .layui-body {
+            background-color: #dcdcdc;
+            padding: 5px;
+        }
+        .logo {
+            display: inline-block;
+            height: 30px;
+            width: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo layui-hide-xs layui-bg-black">
+                <img class="logo" src="/imgs/logo.png">
+                重点人员档案
+            </div>
+            <!-- 头部区域（可配合layui 已有的水平导航） -->
+            <ul class="layui-nav layui-layout-left">
+                <!-- 移动端显示 -->
+                <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+                    <i class="layui-icon layui-icon-spread-left"></i>
+                </li>
+            </ul>
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+                    <a href="javascript:;">
+                        <img src="/imgs/head.jpg" class="layui-nav-img">
+                        {{user}}
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:changePass();"><i class="layui-icon layui-icon-password"></i>&ensp;修改密码</a></dd>
+                        <dd><a href="/user/logout"><i class="layui-icon layui-icon-logout"></i>&ensp;退出</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                <ul class="layui-nav layui-nav-tree" lay-filter="test">
+                    <li class="layui-nav-item layui-nav-itemed layui-this">
+                        <a href="javascript:jumpTo('/archive/index');"><i class="layui-icon layui-icon-home"></i>&ensp;首页</a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="layui-icon layui-icon-friends"></i>&ensp;基础数据</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:jumpTo('/patient/index');">单独新增/更新</a></dd>
+                            <dd><a href="javascript:jumpTo('/patient/batch');">批量新增/更新</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="layui-icon layui-icon-water"></i>&ensp;核酸检测数据</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:jumpTo('/nat/index');">单独查看/更新</a></dd>
+                            <dd><a href="javascript:jumpTo('/nat/batch');">批量新增/更新</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="layui-icon layui-icon-survey"></i>&ensp;每日上报数据</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:jumpTo('/monitor/index');">单独查看/更新</a></dd>
+                            <dd><a href="javascript:jumpTo('/monitor/batch');">批量新增/更新</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="layui-icon layui-icon-location"></i>&ensp;轨迹数据</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;">待开发</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="layui-body" style="padding-bottom:0;">
+            <iframe frameborder="0" scrolling="yes" style="width:100%;height:99%;"
+                    src="/archive/index" id="stage"></iframe>
+        </div>
+    </div>
+
+    <script src="/components/jquery-3.6.0.js"></script>
+    <script src="/layui/layui.js"></script>
+    <script src="/js/index.js"></script>
+</body>
+</html>

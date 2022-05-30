@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/layui/css/layui.css">
+</head>
+<body style="padding:10px;background-color: #e9e9e9;">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">姓名</label>
+            <div class="layui-input-inline">
+                <p id="name" class="layui-input" style="line-height:38px;"></p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">身份证号</label>
+            <div class="layui-input-inline">
+                <p id="id_no" class="layui-input" style="line-height:38px;"></p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">健康状况</label>
+            <div class="layui-input-block">
+                <input type="text" name="health_condition" lay-verify="required" id="health_condition" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否出县</label>
+            <div class="layui-input-block">
+                <input type="text" name="out_status" id="out_status" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">上报日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="submit_date" name="submit_date" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">处置结果</label>
+            <div class="layui-input-block">
+                <input type="text" id="disposal_result" name="disposal_result" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" id="form_btn_box">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="editSub">提交更新</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+        <input type="hidden" name="id" id="did">
+    </form>
+    <div style="display:none" id="dataId">{{dataId}}</div>
+
+    <script src="/components/jquery-3.6.0.js"></script>
+    <script src="/layui/layui.js"></script>
+    <script src="/js/monitor.js"></script>
+    <script>
+        layui.use(function() {
+            var form = layui.form, layer = layui.layer, laydate = layui.laydate;
+
+            $('#did').val($('#dataId').text());
+            initMonitorData(form, layer, laydate);
+
+            // 监听提交
+            form.on('submit(editSub)', function(data) {
+                var field = data.field;
+                doEdit(layer, cleanData(field));
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

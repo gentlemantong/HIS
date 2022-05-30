@@ -1,0 +1,42 @@
+html {
+    height: 100%;
+}
+body {
+    background-image: url(/imgs/back.jpeg);
+    background-size: cover;
+}
+.container {
+    width: 420px;
+    height: 320px;
+    min-height: 320px;
+    max-height: 320px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    padding: 20px;
+    z-index: 130;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 3px 18px rgba(100, 0, 0, .5);
+    font-size: 13px;
+}
+.input-div {
+    display: flex;
+    border: 1px solid #D2D2D2!important;
+    background-color: #fff;
+    height: 38px;
+    line-height: 38px;
+    padding: 0 19px;
+    border-radius: 19px;
+}
+.layui-input {
+    border-style: none;
+}
+.logo {
+    display: inline-block;
+    height: 100px;
+    width: 100px;
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/layui/css/layui.css">
+</head>
+<body>
+    <!--搜索区-->
+    <div class="layui-form-item" style="margin-bottom:0;margin-top: 10px;">
+        <div class="layui-inline">
+            <label class="layui-form-label" style="width:auto;">姓名</label>
+            <div class="layui-input-inline">
+                <input type="text" id="name" placeholder="请输入" class="layui-input">
+            </div>
+            <label class="layui-form-label" style="width:auto;">身份证号</label>
+            <div class="layui-input-inline">
+                <input type="text" id="id_no" placeholder="请输入" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-inline">
+            <button class="layui-btn" lay-active="search" id="search">
+                <i class="layui-icon layui-icon-search"></i>查询
+            </button>
+        </div>
+    </div>
+    <!--结果展示区-->
+    <div class="layui-card-body" style="padding:0 3px 0 3px;">
+        <table class="layui-table" lay-size="sm" id="data_list" lay-filter="data_list"></table>
+    </div>
+
+    <script src="/components/jquery-3.6.0.js"></script>
+    <script src="/layui/layui.js"></script>
+    <script src="/js/monitor.js"></script>
+    <script type="text/html" id="toolbar">
+        <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-set-fill"></i>详情</a>
+    </script>
+    <script>
+        layui.use(function() {
+            var layer = layui.layer, util = layui.util, table = layui.table;
+
+            // 监听按钮点击
+            util.event('lay-active', {
+                // 搜索
+                search: function() {
+                    doSearch(table);
+                }
+            });
+
+            // 监听行操作
+            onToolbarAct(table, layer);
+
+            // 触发搜索按钮点击
+            $('#search').click();
+        });
+    </script>
+</body>
+</html>

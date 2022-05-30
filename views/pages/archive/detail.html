@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>个人档案</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <style>
+        body {
+            background-color: #dcdcdc;
+            min-height: 100%;
+        }
+        .layui-layout {
+            width: 80%;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            bottom: 10px;
+            left: 10px;
+            margin: auto;
+        }
+        .main_h {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .side_h {
+            color: gray;
+        }
+        .main_name {
+            font-size: 40px;
+            font-weight: bold;
+            letter-spacing: 7px;
+        }
+        .layui-form-label {
+            width: auto;
+            padding: 0;
+        }
+    </style>
+</head>
+<body id="capture">
+    <div class="layui-layout">
+        <div id="dataId" style="display:none;">{{dataId}}</div>
+        <!--基本信息-->
+        <div class="layui-card">
+            <div class="layui-card-header" style="padding-top: 20px;padding-bottom: 10px;">
+                <span id="name" class="main_name"></span>
+                <span id="age"></span>
+                <button type="button" class="layui-btn layui-btn-primary layui-btn-sm" id="screenshot"
+                        lay-active="screenshot" title="下载档案截图">
+                    <i class="layui-icon layui-icon-camera"></i>
+                </button>
+            </div>
+            <div class="layui-card-body">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-form"></i>&nbsp;身份证号：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="id_no"></label>
+                    </div>
+                    <div class="layui-inline" style="margin-left:150px;">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-cellphone"></i>&nbsp;联系方式：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="phone"></label>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-location"></i>&nbsp;居住地址：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="address"></label>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-username"></i>&nbsp;职业：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="occupation"></label>
+                    </div>
+                    <div class="layui-inline" style="margin-left:150px;">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-home"></i>&nbsp;工作单位：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="work_unit"></label>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-chart"></i>&nbsp;基础性疾病：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="basic_disease"></label>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-log"></i>&nbsp;近半年县外就医需求：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="out_treatment"></label>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-table"></i>&nbsp;初阳日期：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="first_positive_date"></label>
+                    </div>
+                    <div class="layui-inline" style="margin-left:150px;">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-table"></i>&nbsp;末阳日期：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="last_positive_date"></label>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-survey"></i>&nbsp;来源：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="source"></label>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><i class="layui-icon layui-icon-user"></i>&nbsp;同住人：</label>
+                        <label class="layui-form-label" style="text-align:left;" id="roommates"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--核酸检测信息-->
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="main_h">核酸检测信息</span>
+                <span class="side_h"> / Nucleic Acid Detection Information</span>
+            </div>
+            <div class="layui-card-body">
+                <div id="nat_chart" style="width:100%;height:400px;"></div>
+                <table class="layui-table" lay-size="sm" id="testing_list" lay-filter="testing_list"></table>
+            </div>
+        </div>
+        <!--每日上报信息-->
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="main_h">每日上报信息</span>
+                <span class="side_h"> / Monitoring Information</span>
+            </div>
+            <div class="layui-card-body">
+                <table class="layui-table" lay-size="sm" id="monitor_list" lay-filter="monitor_list"></table>
+            </div>
+        </div>
+        <!--轨迹信息-->
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="main_h">轨迹信息</span>
+                <span class="side_h"> / Track Information</span>
+            </div>
+            <div class="layui-card-body">
+                待开发...
+            </div>
+        </div>
+        <div style="height: 10px;"></div>
+    </div>
+
+    <script src="/components/jquery-3.6.0.js"></script>
+    <script src="/components/html2canvas.js"></script>
+    <script src="/layui/layui.js"></script>
+    <script src="/components/echarts.js"></script>
+    <script src="/js/archive.js"></script>
+    <script>
+        layui.use(function () {
+            var element = layui.element, layer = layui.layer, util = layui.util, table = layui.table;
+
+            var myChart = echarts.init(document.getElementById('nat_chart'));
+
+            // 监听打印按钮点击
+            util.event('lay-active', {
+                screenshot: function() {
+                    createImg();
+                }
+            });
+
+            initData(layer, table, myChart);
+        });
+    </script>
+</body>
+</html>

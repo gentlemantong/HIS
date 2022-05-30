@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>重点人员档案管理系统</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="icon" href="/imgs/favicon.ico">
+</head>
+<body>
+    <div class="layui-anim layui-anim-scale layui-container container">
+        <div class="layui-form-item" style="text-align: center;">
+            <img class="logo" src="/imgs/logo.png">
+        </div>
+        <form class="layui-form" action="./login">
+            <div class="layui-form-item input-div">
+                <i class="layui-icon layui-icon-username"></i>
+                <input type="text" name="username" required  lay-verify="required" placeholder="用户名" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-item input-div">
+                <i class="layui-icon layui-icon-password"></i>
+                <input type="password" name="password" required lay-verify="required" placeholder="密码" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-radius layui-btn-normal" lay-submit lay-filter="formLogin">立即登录</button>
+                    <button type="reset" class="layui-btn layui-btn-radius layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script src="/components/jquery-3.6.0.js"></script>
+    <script src="/layui/layui.js"></script>
+    <script src="/js/user.js"></script>
+    <script>
+        layui.use(function() {
+            var layer = layui.layer,
+            form = layui.form;
+
+            // 监听提交
+            form.on('submit(formLogin)', function(data){
+                login(data.field, layer);
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

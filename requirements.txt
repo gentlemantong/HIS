@@ -1,0 +1,5 @@
+bottle==0.12.21
+pymysql~=1.0.2
+beaker~=1.11.0
+xlrd~=1.2.0
+waitress~=2.1.1
