@@ -33,4 +33,4 @@ if __name__ == '__main__':
     # 运行
     app = default_app()
     app = SessionMiddleware(app, SESSION_OPTS)
-    serve(app, host='0.0.0.0', port=9000)
+    serve(app, host='0.0.0.0', port=9000, threads=6)

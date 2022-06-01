@@ -38,8 +38,8 @@ def execute_search(data):
             count_query += ' AND '.join(key_strings)
             db_query += ' AND '.join(key_strings)
         db_query += ' LIMIT {0},{1}'.format((page - 1) * limit, limit)
-        count = MySQLClient.find_one('his', count_query)[0]
-        temps = MySQLClient.find('his', db_query)
+        count = MySQLClient.find_one(count_query)[0]
+        temps = MySQLClient.find(db_query)
         if temps:
             results = [{'id': t[0], 'name': t[1], 'id_no': t[2], 'health_condition': t[3], 'out_status': t[4],
                         'submit_date': t[5].strftime('%Y-%m-%d'), 'disposal_result': t[6]} for t in temps]
@@ -66,12 +66,12 @@ def execute_search_by_pid(data):
         sql_steel = " FROM `bench`.`monitor` WHERE `pid`={0}".format(data['pid'])
         # 获取数量
         count_query = "SELECT COUNT(`id`)" + sql_steel
-        count = MySQLClient.find_one('his', count_query)[0]
+        count = MySQLClient.find_one(count_query)[0]
 
         # 获取当前页数据
         db_query = "SELECT `submit_date`,`health_condition`,`out_status`,`disposal_result`" + sql_steel\
                    + ' LIMIT {0},{1}'.format((page - 1) * limit, limit)
-        temps = MySQLClient.find('his', db_query)
+        temps = MySQLClient.find(db_query)
         if temps:
             results = [{'submit_date': t[0].strftime('%Y-%m-%d'), 'health_condition': t[1], 'out_status': t[2],
                         'disposal_result': t[3]} for t in temps]
@@ -95,7 +95,7 @@ def get_monitor_detail(data):
         data_query = "SELECT `b`.`name`,`b`.`id_no`,`a`.`health_condition`,`a`.`out_status`,`a`.`submit_date`," \
                      "`a`.`disposal_result` FROM `bench`.`monitor` `a` LEFT JOIN `bench`.`patient` `b` " \
                      "ON `a`.`pid`=`b`.`id` WHERE `a`.`id`={0};".format(data['id'])
-        r = MySQLClient.find_one('his', data_query)
+        r = MySQLClient.find_one(data_query)
         result = {'name': r[0], 'id_no': r[1], 'health_condition': r[2], 'out_status': r[3],
                   'submit_date': r[4].strftime('%Y-%m-%d'), 'disposal_result': '' if r[5] is None else r[5]}
     except Exception as e:
@@ -116,7 +116,7 @@ def execute_update(data):
     try:
         db_query = "UPDATE `bench`.`monitor` SET `health_condition`='{health_condition}',`out_status`='{out_status}'," \
                    "`submit_date`='{submit_date}',`disposal_result`='{disposal_result}' WHERE `id`={id};".format(**data)
-        MySQLClient.execute('his', db_query, None)
+        MySQLClient.execute(db_query, None)
     except Exception as e:
         code = -1
         msg = '数据错误：{0}'.format(e)
@@ -168,7 +168,7 @@ def __batch_insert_update(common_lines):
     try:
         db_query = "SELECT `id_no`,`id` FROM `bench`.`patient` WHERE `id_no` IN {0}".format(
             str([i[2] for i in common_lines]).replace('[', '(').replace(']', ')'))
-        r = MySQLClient.find('his', db_query)
+        r = MySQLClient.find(db_query)
         if not r:
             raise Exception('请先上传人员基本信息')
         patient = {k: v for k, v in r}
@@ -187,6 +187,6 @@ def __batch_insert_update(common_lines):
         db_query += " ON DUPLICATE KEY UPDATE `pid`=VALUES(`pid`),`submit_date`=VALUES(`submit_date`)," \
                     "`health_condition`=VALUES(`health_condition`),`out_status`=VALUES(`out_status`)," \
                     "`disposal_result`=VALUES(`disposal_result`);"
-        MySQLClient.execute('his', db_query)
+        MySQLClient.execute(db_query)
     except Exception as e:
         logging.exception(e)

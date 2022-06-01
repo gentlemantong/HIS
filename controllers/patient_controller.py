@@ -23,11 +23,11 @@ def get_patient_detail(data_id):
         query = "SELECT `name`,`age`,`id_no`,`phone`,`town`,`address`,`basic_disease`,`out_treatment`," \
                 "`first_positive_date`,`last_positive_date`,`source`,`occupation`,`work_unit` FROM `bench`.`patient`" \
                 " WHERE `id`={0}".format(data_id)
-        data = MySQLClient.find_one('his', query)
+        data = MySQLClient.find_one(query)
 
         # 获取同住人信息
         query = "SELECT `name`,`id_no` FROM `bench`.`roommate` WHERE `pid`={0}".format(data_id)
-        temp_roommates = MySQLClient.find('his', query)
+        temp_roommates = MySQLClient.find(query)
         roommates = [{'name': i[0], 'id_no': i[1]} for i in temp_roommates]
 
         # 组装最终结果
@@ -80,8 +80,8 @@ def execute_search(data):
             count_query += ' AND '.join(key_strings)
             db_query += ' AND '.join(key_strings)
         db_query += ' LIMIT {0},{1}'.format((page-1)*limit, limit)
-        count = MySQLClient.find_one('his', count_query)[0]
-        temps = MySQLClient.find('his', db_query)
+        count = MySQLClient.find_one(count_query)[0]
+        temps = MySQLClient.find(db_query)
         if temps:
             results = [{'id': t[0], 'name': t[1], 'id_no': t[2], 'phone': t[3], 'town': t[4],
                         'source': t[5]} for t in temps]
@@ -99,7 +99,7 @@ def get_pid_by_id_no(id_no):
     :return:
     """
     db_query = "SELECT `id` FROM `bench`.`patient` WHERE `id_no`='{0}'".format(id_no)
-    return MySQLClient.find_one('his', db_query)
+    return MySQLClient.find_one(db_query)
 
 
 def execute_add(data):
@@ -121,7 +121,7 @@ def execute_add(data):
                    "`out_treatment`='{out_treatment}',`first_positive_date`='{first_positive_date}'," \
                    "`last_positive_date`='{last_positive_date}',`source`='{source}',`occupation`='{occupation}'," \
                    "`work_unit`='{work_unit}'".format(**data)
-        MySQLClient.execute('his', db_query)
+        MySQLClient.execute(db_query)
 
         # 插入同住人数据
         __insert_roommates(data)
@@ -146,7 +146,7 @@ def __insert_roommates(data):
                 db_query = db_query + "({0},'{1}','{2}'),".format(
                     pid, data['roommate_name' + i], data['roommate_id_no' + i])
             db_query = db_query[:-1] + ';'
-            MySQLClient.execute('his', db_query)
+            MySQLClient.execute(db_query)
     except Exception as e:
         logging.exception(e)
 
@@ -171,10 +171,10 @@ def execute_update(data):
                    "`out_treatment`='{out_treatment}',`first_positive_date`='{first_positive_date}'," \
                    "`last_positive_date`='{last_positive_date}',`source`='{source}',`occupation`='{occupation}'," \
                    "`work_unit`='{work_unit}' WHERE `id`={id}".format(**data)
-        MySQLClient.execute('his', db_query)
+        MySQLClient.execute(db_query)
 
         # 更新同住人数据
-        MySQLClient.execute('his', "DELETE FROM `bench`.`roommate` WHERE `pid`={0}".format(data['id']))
+        MySQLClient.execute("DELETE FROM `bench`.`roommate` WHERE `pid`={0}".format(data['id']))
         __insert_roommates(data)
     except Exception as e:
         code = -1
@@ -228,7 +228,7 @@ def __batch_update_roommates(row_datas):
         data_list = [{'id_no': row_data[2], 'roommate': row_data[9]} for row_data in row_datas]
         for row_data in data_list:
             pid = get_pid_by_id_no(row_data['id_no'])[0]
-            MySQLClient.execute('his', "DELETE FROM `bench`.`roommate` WHERE `pid`={0}".format(pid))
+            MySQLClient.execute("DELETE FROM `bench`.`roommate` WHERE `pid`={0}".format(pid))
             mate_arr = row_data['roommate'].split(';')
             db_query = "INSERT INTO `bench`.`roommate`(`pid`,`name`,`id_no`) VALUES "
             for mate in mate_arr:
@@ -237,7 +237,7 @@ def __batch_update_roommates(row_datas):
                     db_query += "({0},'{1}','{2}'),".format(pid, mate_items[0].strip(), mate_items[1].strip())
             if db_query[-1] == ',':
                 db_query = db_query[:-1] + ';'
-                MySQLClient.execute('his', db_query)
+                MySQLClient.execute(db_query)
     except Exception as e:
         logging.exception(e)
 
@@ -277,6 +277,6 @@ def __batch_insert_update(row_datas):
                     "`basic_disease`=VALUES(`basic_disease`),`out_treatment`=VALUES(`out_treatment`)," \
                     "`first_positive_date`=VALUES(`first_positive_date`),`last_positive_date`=VALUES(`last_positive_date`)," \
                     "`source`=VALUES(`source`),`occupation`=VALUES(`occupation`),`work_unit`=VALUES(`work_unit`);"
-        MySQLClient.execute('his', db_query)
+        MySQLClient.execute(db_query)
     except Exception as e:
         logging.exception(e)

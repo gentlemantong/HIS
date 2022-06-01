@@ -5,7 +5,6 @@
 @created_time: 2021-10-23 17:45
 """
 import pymysql
-
 from settings import DATABASE_CONFIG
 
 
@@ -13,10 +12,9 @@ class MySQLClient(object):
     """初步封装的MySQL相关方法类"""
 
     @staticmethod
-    def __get_client(schema):
+    def __get_client():
         """
         get client
-        :param schema:
         :return:
         """
         config = DATABASE_CONFIG
@@ -34,15 +32,14 @@ class MySQLClient(object):
             raise Exception(u"Failed to connect to mysql - {0}".format(config[u'host']))
 
     @staticmethod
-    def execute(schema, db_query, params=None):
+    def execute(db_query, params=None):
         """
         update、insert类操作
-        :param schema:
         :param db_query:
         :param params:
         :return:
         """
-        client = MySQLClient.__get_client(schema)
+        client = MySQLClient.__get_client()
         if client:
             cursor = client.cursor()
             cursor.execute(db_query, params)
@@ -51,15 +48,14 @@ class MySQLClient(object):
             client.close()
 
     @staticmethod
-    def execute_many(schema, db_query, params):
+    def execute_many(db_query, params):
         """
         执行多个update、insert类操作
-        :param schema:
         :param db_query:
         :param params:
         :return:
         """
-        client = MySQLClient.__get_client(schema)
+        client = MySQLClient.__get_client()
         if client:
             cursor = client.cursor()
             cursor.executemany(db_query, params)
@@ -68,16 +64,15 @@ class MySQLClient(object):
             client.close()
 
     @staticmethod
-    def find_one(schema, db_query, params=None):
+    def find_one(db_query, params=None):
         """
         查询满足条件的第一条数据
-        :param schema:
         :param db_query:
         :param params:
         :return:
         """
         result = None
-        client = MySQLClient.__get_client(schema)
+        client = MySQLClient.__get_client()
         if client:
             cursor = client.cursor()
             cursor.execute(db_query, params)
@@ -87,16 +82,15 @@ class MySQLClient(object):
         return result
 
     @staticmethod
-    def find(schema, db_query, params=None):
+    def find(db_query, params=None):
         """
         查询满足条件的所有数据
-        :param schema:
         :param db_query:
         :param params:
         :return:
         """
         result_list = list()
-        client = MySQLClient.__get_client(schema)
+        client = MySQLClient.__get_client()
         if client:
             cursor = client.cursor()
             cursor.execute(db_query, params)
